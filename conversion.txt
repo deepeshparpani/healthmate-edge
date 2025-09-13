@@ -1,0 +1,42 @@
+from optimum.onnx import OnnxModel
+from optimum.utils.preprocessing import PreprocessingConfiguration
+import torch
+
+def convert_gguf_to_onnx(gguf_path, output_path):
+    # Load the GGUF model
+    from ctransformers import AutoModelForCausalLM
+    model = AutoModelForCausalLM.from_pretrained(gguf_path)
+    
+    # Convert to PyTorch first
+    pytorch_model = model.to_torch()
+    
+    # Export to ONNX
+    dummy_input = torch.randn(1, 512)  # Adjust shape based on your model
+    torch.onnx.export(
+        pytorch_model,
+        dummy_input,
+        output_path,
+        opset_version=13,
+        input_names=['input'],
+        output_names=['output'],
+        dynamic_axes={
+            'input': {0: 'batch_size', 1: 'sequence'},
+            'output': {0: 'batch_size', 1: 'sequence'}
+        }
+    )
+    
+    # Optimize for QNN
+    model = OnnxModel.from_pretrained(output_path)
+    model.optimize_model(
+        provider="qnn",
+        optimization_config={
+            "target_device": "qnn",
+            "execution_providers": ["QNNExecutionProvider"]
+        }
+    )
+    model.save_pretrained(output_path)
+
+# Usage
+gguf_model_path = "path/to/your/model.gguf"
+onnx_output_path = "path/to/output/model.onnx"
+convert_gguf_to_onnx(gguf_model_path, onnx_output_path)
