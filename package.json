@@ -3,13 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
+  "type": "module",
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+  "electron": "NODE_ENV=development electron .",
+  "start": "npm run dev & npm run electron",
+  "build": "vite build"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^38.1.0"
+    "@vitejs/plugin-react": "^5.0.2",
+    "electron": "^38.1.0",
+    "vite": "^7.1.5"
+  },
+  "dependencies": {
+    "react": "19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.1"
   }
 }
