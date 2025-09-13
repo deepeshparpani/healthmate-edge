@@ -6,14 +6,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-  "electron": "NODE_ENV=development electron .",
-  "start": "npm run dev & npm run electron",
-  "build": "vite build"
+     "electron": "cross-env NODE_ENV=development electron .",
+    "start": "npm run dev & npm run electron",
+    "build": "vite build"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.2",
+    "cross-env": "^10.0.0",
     "electron": "^38.1.0",
     "vite": "^7.1.5"
   },
