@@ -4,11 +4,29 @@
   "description": "",
   "main": "main.js",
   "type": "module",
+  "build": {
+    "appId": "com.umass.healthmateedge",
+    "productName": "Healthmate Edge",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
   "scripts": {
     "dev": "vite",
-     "electron": "cross-env NODE_ENV=development electron .",
+    "electron": "cross-env NODE_ENV=development electron .",
     "start": "npm run dev & npm run electron",
-    "build": "vite build"
+  
+    "vite:build": "vite build",
+    "electron:build": "electron-builder",
+    "build": "npm run vite:build && npm run electron:build"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +34,7 @@
     "@vitejs/plugin-react": "^5.0.2",
     "cross-env": "^10.0.0",
     "electron": "^38.1.0",
+    "electron-builder": "^26.0.12",
     "vite": "^7.1.5"
   },
   "dependencies": {

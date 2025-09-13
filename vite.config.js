@@ -9,7 +9,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',           // production build
     rollupOptions: {
-      input: path.resolve(__dirname, 'public/index.html')
+      input: path.resolve(__dirname, 'index.html')
     }
   },
   server: {

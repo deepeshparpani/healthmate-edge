@@ -20,9 +20,9 @@ function createWindow() {
 
   if (isDev) {
     win.loadURL('http://localhost:5173'); // Vite dev server
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, 'public/index.html'));
+    win.loadFile(path.join(__dirname, 'dist/index.html'));
   }
 }
 
