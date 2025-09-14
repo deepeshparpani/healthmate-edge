@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../components/Button.jsx";
 
@@ -7,12 +7,24 @@ function Page2() {
   const location = useLocation();
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Get summary from navigation state
+  // Get summary and PDF from navigation state
   const summary = location.state?.summary || "No summary available";
+  const pdfFile = location.state?.pdf;
 
-  const pdfPath = location.state?.pdf
-    ? location.state.pdf.path
-    : null;
+  // Create blob URL from uploaded PDF file
+  const [pdfUrl, setPdfUrl] = useState(null);
+
+  useEffect(() => {
+    if (pdfFile) {
+      const url = URL.createObjectURL(pdfFile);
+      setPdfUrl(url);
+
+      // Cleanup blob URL when component unmounts
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+  }, [pdfFile]);
 
   const toggleSpeech = () => {
     if (isSpeaking) {
@@ -76,9 +88,7 @@ function Page2() {
           alignItems: "center",
         }}
       >
-        <h1 style={{ margin: 0, color: "#333" }}>
-          Summary
-        </h1>
+        <h1 style={{ margin: 0, color: "#333" }}>Summary</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <button
             onClick={toggleSpeech}
@@ -149,30 +159,44 @@ function Page2() {
           >
             PDF Viewer
           </div>
-          {
-            pdfPath && (
-                <div
-            style={{
-              flex: 1,
-              padding: "20px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <iframe
-              src={pdfPath}
+          {pdf && (
+            <div
               style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-                borderRadius: "4px",
+                flex: 1,
+                padding: "20px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
               }}
-              title="PDF Viewer"
-            />
-          </div>
-            )
-          }
+            >
+              {pdfUrl ? (
+                <iframe
+                  src={pdfUrl}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: "none",
+                    borderRadius: "4px",
+                  }}
+                  title="PDF Viewer"
+                />
+              ) : (
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: "#666",
+                    fontSize: "16px",
+                    padding: "40px",
+                  }}
+                >
+                  <div style={{ marginBottom: "16px", fontSize: "48px" }}>
+                    📄
+                  </div>
+                  <div>No PDF file available</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Section - Summary Display */}
