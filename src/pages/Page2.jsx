@@ -210,14 +210,40 @@ function Page2() {
             {streamedWords.length === 0 ? (
               <div
                 style={{
-                  color: "#666",
-                  textAlign: "center",
-                  marginTop: "50px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "4px",
                 }}
               >
-                {isStreaming
-                  ? "Starting word stream..."
-                  : 'Click "Restart Stream" to begin'}
+                {isStreaming ? (
+                  // Skeleton loading effect
+                  Array.from({ length: 20 }, (_, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        height: "24px",
+                        width: `${Math.random() * 40 + 20}px`,
+                        backgroundColor: "#e0e0e0",
+                        borderRadius: "4px",
+                        margin: "2px",
+                        animation:
+                          "skeletonPulse 1.5s ease-in-out infinite alternate",
+                        animationDelay: `${index * 0.1}s`,
+                      }}
+                    />
+                  ))
+                ) : (
+                  <div
+                    style={{
+                      color: "#666",
+                      textAlign: "center",
+                      marginTop: "50px",
+                      width: "100%",
+                    }}
+                  >
+                    Click "Restart Stream" to begin
+                  </div>
+                )}
               </div>
             ) : (
               <div
@@ -250,6 +276,17 @@ function Page2() {
           }
           to {
             opacity: 1;
+          }
+        }
+
+        @keyframes skeletonPulse {
+          0% {
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1.02);
           }
         }
       `}</style>
