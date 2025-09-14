@@ -9,12 +9,14 @@ function Page1() {
   const [pdf, setPdf] = useState(null);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [firstWord, setFirstWord] = useState(''); // New: to show first word from backend
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
     setDetail('');
     setPdf(null);
     setError('');
+    setFirstWord('');
   };
 
   const handleDetailChange = (e) => {
@@ -34,6 +36,7 @@ function Page1() {
       setPdf(null);
       setError('');
     }
+    setFirstWord('');
   };
 
   const handleDragOver = (e) => {
@@ -60,13 +63,14 @@ function Page1() {
       setPdf(null);
       setError('Only PDF files are allowed.');
     }
+    setFirstWord('');
   };
 
   const handleCustomFileClick = () => {
     fileInputRef.current.click();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!pdf) {
       setError('Please upload a PDF file.');
@@ -76,13 +80,35 @@ function Page1() {
       setError('Please select the report detail level.');
       return;
     }
-    if (pdf && pdf.type !== 'application/pdf') {
+    if (pdf.type !== 'application/pdf') {
       setError('Only PDF files are allowed.');
       return;
     }
+
     setError('');
-    // TODO: Pass pdf and detail to your AI model here
-    navigate('/page2');
+    setFirstWord('');
+
+    try {
+      const formData = new FormData();
+      formData.append('pdf', pdf);
+      formData.append('detail', detail);
+
+      const response = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Server error');
+
+      const result = await response.json();
+      setFirstWord(result.first_word || '');
+
+      // Navigate if needed after processing
+      // navigate('/page2', { state: { firstWord: result.first_word } });
+    } catch (err) {
+      console.error(err);
+      setError('Failed to process PDF.');
+    }
   };
 
   return (
@@ -250,7 +276,15 @@ function Page1() {
         >
           Submit
         </button>
+
         {error && <div style={{ color: 'red', textAlign: 'center', marginTop: 4 }}>{error}</div>}
+
+        {/* Display first word from backend */}
+        {firstWord && (
+          <div style={{ marginTop: 12, textAlign: 'center', fontWeight: 500 }}>
+            First word in PDF: <span style={{ color: '#1976d2' }}>{firstWord}</span>
+          </div>
+        )}
       </div>
     </div>
   );

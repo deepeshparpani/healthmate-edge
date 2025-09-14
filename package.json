@@ -19,7 +19,7 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["arm64"]
+          "arch": ["x64"]
         }
       ]
     }
