@@ -1,0 +1,50 @@
+{
+  "name": "qualcomm-hackathon---healthmate-edge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "type": "module",
+  "build": {
+    "appId": "com.umass.healthmateedge",
+    "productName": "Healthmate Edge",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "electron": "cross-env NODE_ENV=development electron .",
+    "start": "npm run dev & npm run electron",
+  
+    "vite:build": "vite build",
+    "electron:build": "electron-builder",
+    "build": "npm run vite:build && npm run electron:build"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.2",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.0",
+    "electron-builder": "^26.0.12",
+    "vite": "^7.1.5"
+  },
+  "dependencies": {
+    "react": "19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.1"
+  }
+}
