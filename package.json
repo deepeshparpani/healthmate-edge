@@ -16,7 +16,12 @@
       "buildResources": "assets"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["arm64"]
+        }
+      ]
     }
   },
   "scripts": {
