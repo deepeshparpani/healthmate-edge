@@ -1,42 +1,43 @@
-import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Page1() {
   const navigate = useNavigate();
   const fileInputRef = useRef();
-  const [role, setRole] = useState('patient');
-  const [detail, setDetail] = useState('');
+  const [role, setRole] = useState("patient");
+  const [detail, setDetail] = useState("brief");
   const [pdf, setPdf] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [dragActive, setDragActive] = useState(false);
-  const [firstWord, setFirstWord] = useState(''); // New: to show first word from backend
+  const [firstWord, setFirstWord] = useState(""); // New: to show first word from backend
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
-    setDetail('');
+    setDetail("brief");
     setPdf(null);
-    setError('');
-    setFirstWord('');
+    setError("");
+    setFirstWord("");
   };
 
   const handleDetailChange = (e) => {
     setDetail(e.target.value);
-    setError('');
+    setError("");
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
+    if (file && file.type === "application/pdf") {
       setPdf(file);
-      setError('');
+      setError("");
     } else if (file) {
       setPdf(null);
-      setError('Only PDF files are allowed.');
+      setError("Only PDF files are allowed.");
     } else {
       setPdf(null);
-      setError('');
+      setError("");
     }
-    setFirstWord('');
+    setFirstWord("");
   };
 
   const handleDragOver = (e) => {
@@ -56,14 +57,14 @@ function Page1() {
     e.stopPropagation();
     setDragActive(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type === 'application/pdf') {
+    if (file && file.type === "application/pdf") {
       setPdf(file);
-      setError('');
+      setError("");
     } else if (file) {
       setPdf(null);
-      setError('Only PDF files are allowed.');
+      setError("Only PDF files are allowed.");
     }
-    setFirstWord('');
+    setFirstWord("");
   };
 
   const handleCustomFileClick = () => {
@@ -73,97 +74,129 @@ function Page1() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!pdf) {
-      setError('Please upload a PDF file.');
+      setError("Please upload a PDF file.");
       return;
     }
-    if (role === 'patient' && !detail) {
-      setError('Please select the report detail level.');
+    if (role === "patient" && !detail) {
+      setError("Please select the report detail level.");
       return;
     }
-    if (pdf.type !== 'application/pdf') {
-      setError('Only PDF files are allowed.');
+    if (pdf.type !== "application/pdf") {
+      setError("Only PDF files are allowed.");
       return;
     }
 
-    setError('');
-    setFirstWord('');
+    setError("");
+    setFirstWord("");
+    setIsLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append('pdf', pdf);
-      formData.append('detail', detail);
-      formData.append('role', role);
+      formData.append("pdf", pdf);
+      formData.append("detail", detail);
+      formData.append("role", role);
 
-      const response = await fetch('http://127.0.0.1:5000/upload', {
-        method: 'POST',
+      const response = await fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Server error');
+      if (!response.ok) {
+        if (response.status === 500) {
+          throw new Error("Server error. Please try again.");
+        } else if (response.status === 400) {
+          throw new Error("Invalid file format. Please check your PDF.");
+        } else {
+          throw new Error(
+            `Server error (${response.status}). Please try again.`
+          );
+        }
+      }
 
       const result = await response.json();
-      setFirstWord(result.first_word || '');
+
+      if (!result.summary) {
+        throw new Error("No summary generated. Please try again.");
+      }
 
       // Navigate if needed after processing
-      // navigate('/page2', { state: { firstWord: result.first_word } });
+      navigate("/page2", { state: { summary: result.summary } });
     } catch (err) {
       console.error(err);
-      setError('Failed to process PDF.');
+      setError(err.message || "Failed to process PDF. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100vw',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #e3f0ff 0%, #f9f9f9 100%)',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        maxWidth: 400,
-        width: '100%',
-        padding: 32,
-        borderRadius: 16,
-        boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-        background: '#fff',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
-      }}>
-        <h1 style={{
-          textAlign: 'center',
-          color: '#1976d2',
-          fontWeight: 700,
-          letterSpacing: 1,
-          marginBottom: 32
-        }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #e3f0ff 0%, #f9f9f9 100%)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 400,
+          width: "100%",
+          padding: 32,
+          borderRadius: 16,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          background: "#fff",
+          fontFamily: "Segoe UI, Arial, sans-serif",
+        }}
+      >
+        <h1
+          style={{
+            textAlign: "center",
+            color: "#1976d2",
+            fontWeight: 700,
+            letterSpacing: 1,
+            marginBottom: 32,
+          }}
+        >
           HealthMate Edge
         </h1>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-          <label style={{
-            marginRight: 16,
-            fontWeight: role === 'doctor' ? 600 : 400,
-            color: role === 'doctor' ? '#1976d2' : '#333'
-          }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 24,
+          }}
+        >
+          <label
+            style={{
+              marginRight: 16,
+              fontWeight: role === "doctor" ? 600 : 400,
+              color: role === "doctor" ? "#1976d2" : "#333",
+            }}
+          >
             <input
               type="radio"
               value="doctor"
-              checked={role === 'doctor'}
+              checked={role === "doctor"}
               onChange={handleRoleChange}
               style={{ marginRight: 6 }}
             />
             Doctor
           </label>
-          <label style={{
-            fontWeight: role === 'patient' ? 600 : 400,
-            color: role === 'patient' ? '#1976d2' : '#333'
-          }}>
+          <label
+            style={{
+              fontWeight: role === "patient" ? 600 : 400,
+              color: role === "patient" ? "#1976d2" : "#333",
+            }}
+          >
             <input
               type="radio"
               value="patient"
-              checked={role === 'patient'}
+              checked={role === "patient"}
               onChange={handleRoleChange}
               style={{ marginRight: 6 }}
             />
@@ -171,41 +204,32 @@ function Page1() {
           </label>
         </div>
 
-        {role === 'patient' && (
+        {role === "patient" && (
           <div style={{ marginBottom: 24 }}>
-            <div style={{ marginBottom: 8, fontWeight: 500 }}>Select Report Detail:</div>
-            <label style={{ display: 'block', marginBottom: 6 }}>
+            <div style={{ marginBottom: 8, fontWeight: 500 }}>
+              Select Report Detail:
+            </div>
+            <label style={{ display: "block", marginBottom: 6 }}>
               <input
                 type="radio"
                 name="detail"
-                value="minimal"
-                checked={detail === 'minimal'}
+                value="brief"
+                checked={detail === "brief"}
                 onChange={handleDetailChange}
                 style={{ marginRight: 6 }}
               />
               Minimal (Quick summary)
             </label>
-            <label style={{ display: 'block', marginBottom: 6 }}>
+            <label style={{ display: "block", marginBottom: 6 }}>
               <input
                 type="radio"
                 name="detail"
-                value="standard"
-                checked={detail === 'standard'}
+                value="long"
+                checked={detail === "long"}
                 onChange={handleDetailChange}
                 style={{ marginRight: 6 }}
               />
-              Standard (Balanced detail)
-            </label>
-            <label style={{ display: 'block', marginBottom: 12 }}>
-              <input
-                type="radio"
-                name="detail"
-                value="comprehensive"
-                checked={detail === 'comprehensive'}
-                onChange={handleDetailChange}
-                style={{ marginRight: 6 }}
-              />
-              Comprehensive (Most detailed)
+              Comprehensive (Balanced detail)
             </label>
           </div>
         )}
@@ -216,14 +240,14 @@ function Page1() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           style={{
-            border: dragActive ? '2px solid #1976d2' : '2px dashed #b0b8c1',
+            border: dragActive ? "2px solid #1976d2" : "2px dashed #b0b8c1",
             borderRadius: 10,
             padding: 24,
-            textAlign: 'center',
-            background: dragActive ? '#e3f0ff' : '#f7fafd',
+            textAlign: "center",
+            background: dragActive ? "#e3f0ff" : "#f7fafd",
             marginBottom: 24,
-            transition: 'border 0.2s, background 0.2s',
-            cursor: 'pointer'
+            transition: "border 0.2s, background 0.2s",
+            cursor: "pointer",
           }}
           onClick={handleCustomFileClick}
         >
@@ -232,27 +256,38 @@ function Page1() {
             type="file"
             accept="application/pdf"
             onChange={handleFileChange}
-            style={{ display: 'none' }}
+            style={{ display: "none" }}
           />
-          <div style={{ fontWeight: 500, color: '#1976d2', marginBottom: 8 }}>
-            {pdf ? 'PDF Selected:' : 'Drop your PDF here or'}
+          <div style={{ fontWeight: 500, color: "#1976d2", marginBottom: 8 }}>
+            {pdf ? "PDF Selected:" : "Drop your PDF here or"}
           </div>
           {pdf ? (
-            <div style={{ color: '#1976d2', wordBreak: 'break-all', marginBottom: 8 }}>{pdf.name}</div>
+            <div
+              style={{
+                color: "#1976d2",
+                wordBreak: "break-all",
+                marginBottom: 8,
+              }}
+            >
+              {pdf.name}
+            </div>
           ) : (
             <button
               type="button"
-              onClick={e => { e.stopPropagation(); handleCustomFileClick(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCustomFileClick();
+              }}
               style={{
-                background: '#1976d2',
-                color: '#fff',
-                border: 'none',
+                background: "#1976d2",
+                color: "#fff",
+                border: "none",
                 borderRadius: 8,
-                padding: '7px 18px',
+                padding: "7px 18px",
                 fontWeight: 500,
                 fontSize: 15,
-                cursor: 'pointer',
-                marginBottom: 0
+                cursor: "pointer",
+                marginBottom: 0,
               }}
             >
               Browse
@@ -262,31 +297,65 @@ function Page1() {
 
         <button
           onClick={handleSubmit}
+          disabled={isLoading}
           style={{
-            width: '100%',
-            padding: '12px 0',
-            background: '#1976d2',
-            color: '#fff',
-            border: 'none',
+            width: "100%",
+            padding: "12px 0",
+            background: isLoading ? "#ccc" : "#1976d2",
+            color: "#fff",
+            border: "none",
             borderRadius: 8,
             fontWeight: 600,
             fontSize: 16,
-            cursor: 'pointer',
-            marginBottom: 12
+            cursor: isLoading ? "not-allowed" : "pointer",
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "all 0.2s ease",
           }}
         >
-          Submit
+          {isLoading && (
+            <div
+              style={{
+                width: "16px",
+                height: "16px",
+                border: "2px solid #fff",
+                borderTop: "2px solid transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+          )}
+          {isLoading ? "Processing..." : "Submit"}
         </button>
 
-        {error && <div style={{ color: 'red', textAlign: 'center', marginTop: 4 }}>{error}</div>}
+        {error && (
+          <div style={{ color: "red", textAlign: "center", marginTop: 4 }}>
+            {error}
+          </div>
+        )}
 
         {/* Display first word from backend */}
         {firstWord && (
-          <div style={{ marginTop: 12, textAlign: 'center', fontWeight: 500 }}>
-            First word in PDF: <span style={{ color: '#1976d2' }}>{firstWord}</span>
+          <div style={{ marginTop: 12, textAlign: "center", fontWeight: 500 }}>
+            First word in PDF:{" "}
+            <span style={{ color: "#1976d2" }}>{firstWord}</span>
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }

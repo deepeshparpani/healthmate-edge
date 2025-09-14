@@ -1,106 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../components/Button.jsx";
-
-const { ipcRenderer } = window.require("electron");
 
 function Page2() {
   const navigate = useNavigate();
-  const [streamedWords, setStreamedWords] = useState([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [isStreamComplete, setIsStreamComplete] = useState(false);
+  const location = useLocation();
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const wordsContainerRef = useRef(null);
+
+  // Get summary from navigation state
+  const summary = location.state?.summary || "No summary available";
   const pdfPath = "~/Users/sricharanramesh/Work/Resume/1 pager.pdf";
 
-  // Refs for event handlers to avoid stale closures
-  const handleWordStreamRef = useRef(null);
-  const handleStreamCompleteRef = useRef(null);
-
-  useEffect(() => {
-    // Create fresh event handlers
-    const handleWordStream = (event, word) => {
-      setStreamedWords((prev) => {
-        console.log("Received word:", word);
-        return [...prev, word];
-      });
-
-      if (wordsContainerRef.current) {
-        wordsContainerRef.current.scrollTop =
-          wordsContainerRef.current.scrollHeight;
-      }
-    };
-
-    const handleStreamComplete = () => {
-      console.log("Stream completed");
-      setIsStreaming(false);
-      setIsStreamComplete(true);
-    };
-
-    // Store refs for cleanup
-    handleWordStreamRef.current = handleWordStream;
-    handleStreamCompleteRef.current = handleStreamComplete;
-
-    // Add listeners
-    ipcRenderer.on("word-stream", handleWordStream);
-    ipcRenderer.on("word-stream-complete", handleStreamComplete);
-
-    // Start initial stream
-    startWordStream();
-
-    // Cleanup function
-    return () => {
-      console.log("Cleaning up event listeners");
-      ipcRenderer.removeListener("word-stream", handleWordStream);
-      ipcRenderer.removeListener("word-stream-complete", handleStreamComplete);
-    };
-  }, []);
-
-  const stopCurrentStream = async () => {
-    console.log("Stopping current stream");
-    try {
-      await ipcRenderer.invoke("stop-word-stream");
-    } catch (error) {
-      console.error("Error stopping stream:", error);
-    }
-  };
-
-  const startWordStream = async () => {
-    console.log("Starting word stream");
-    setIsStreaming(true);
-    setIsStreamComplete(false);
-    setStreamedWords([]);
-
-    try {
-      await ipcRenderer.invoke("start-word-stream");
-    } catch (error) {
-      console.error("Error starting word stream:", error);
-      setIsStreaming(false);
-    }
-  };
-
-  const restartStream = async () => {
-    console.log("Restarting stream");
-
-    // Stop any ongoing speech
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-
-    // First, stop the current stream and clear state
-    await stopCurrentStream();
-    setStreamedWords([]);
-    setIsStreaming(false);
-    setIsStreamComplete(false);
-
-    // Wait a bit to ensure everything is cleaned up
-    setTimeout(async () => {
-      await startWordStream();
-    }, 100);
-  };
-
   const toggleSpeech = () => {
-    if (streamedWords.length === 0) return;
-
     if (isSpeaking) {
       // Pause speech
       window.speechSynthesis.pause();
@@ -114,13 +25,12 @@ function Page2() {
         console.log("Speech resumed");
       } else {
         // Start new speech
-        const fullText = streamedWords.join(" ");
-        console.log("Speaking text:", fullText);
+        console.log("Speaking summary:", summary);
 
         // Cancel any ongoing speech
         window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(fullText);
+        const utterance = new SpeechSynthesisUtterance(summary);
         utterance.rate = 0.9; // Slightly slower than normal
         utterance.pitch = 1;
         utterance.volume = 1;
@@ -164,33 +74,28 @@ function Page2() {
         }}
       >
         <h1 style={{ margin: 0, color: "#333" }}>
-          Page 2 - PDF Viewer & Word Stream
+          Page 2 - PDF Viewer & Summary
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <Button
-            onClick={restartStream}
-            disabled={isStreaming}
-            style={{ marginRight: "10px" }}
-          >
-            {isStreaming ? "Streaming..." : "Restart Stream"}
-          </Button>
           <button
             onClick={toggleSpeech}
-            disabled={!isStreamComplete || streamedWords.length === 0}
+            disabled={!summary || summary === "No summary available"}
             style={{
               padding: "8px 12px",
               backgroundColor:
-                isStreamComplete && streamedWords.length > 0
+                summary && summary !== "No summary available"
                   ? isSpeaking
                     ? "#FF5722"
                     : "#4CAF50"
                   : "#ccc",
               color:
-                isStreamComplete && streamedWords.length > 0 ? "white" : "#666",
+                summary && summary !== "No summary available"
+                  ? "white"
+                  : "#666",
               border: "none",
               borderRadius: "6px",
               cursor:
-                isStreamComplete && streamedWords.length > 0
+                summary && summary !== "No summary available"
                   ? "pointer"
                   : "not-allowed",
               fontSize: "14px",
@@ -201,11 +106,11 @@ function Page2() {
               gap: "6px",
             }}
             title={
-              isStreamComplete && streamedWords.length > 0
+              summary && summary !== "No summary available"
                 ? isSpeaking
                   ? "Pause speech"
                   : "Play speech"
-                : "Wait for stream to complete"
+                : "No summary available"
             }
           >
             {isSpeaking ? "⏸️" : "▶️"} {isSpeaking ? "Pause" : "Play"}
@@ -263,7 +168,7 @@ function Page2() {
           </div>
         </div>
 
-        {/* Right Section - Word Stream */}
+        {/* Right Section - Summary Display */}
         <div
           style={{
             flex: 1,
@@ -283,13 +188,9 @@ function Page2() {
               alignItems: "center",
             }}
           >
-            <span>Word Stream</span>
-            <span style={{ fontSize: "14px" }}>
-              {streamedWords.length} words received
-            </span>
+            <span>Summary</span>
           </div>
           <div
-            ref={wordsContainerRef}
             style={{
               flex: 1,
               padding: "20px",
@@ -299,89 +200,71 @@ function Page2() {
               fontSize: "16px",
             }}
           >
-            {streamedWords.length === 0 ? (
-              <div
+            <div
+              style={{
+                backgroundColor: "white",
+                padding: "20px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                marginBottom: "20px",
+              }}
+            >
+              <h3
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "4px",
+                  margin: "0 0 16px 0",
+                  color: "#333",
+                  fontSize: "18px",
+                  fontWeight: "600",
                 }}
               >
-                {isStreaming ? (
-                  // Skeleton loading effect
-                  Array.from({ length: 20 }, (_, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        height: "24px",
-                        width: `${Math.random() * 40 + 20}px`,
-                        backgroundColor: "#e0e0e0",
-                        borderRadius: "4px",
-                        margin: "2px",
-                        animation:
-                          "skeletonPulse 1.5s ease-in-out infinite alternate",
-                        animationDelay: `${index * 0.1}s`,
-                      }}
-                    />
-                  ))
-                ) : (
-                  <div
-                    style={{
-                      color: "#666",
-                      textAlign: "center",
-                      marginTop: "50px",
-                      width: "100%",
-                    }}
-                  >
-                    Click "Restart Stream" to begin
-                  </div>
-                )}
+                Medical Report Summary
+              </h3>
+              <div
+                style={{
+                  color: "#555",
+                  fontSize: "15px",
+                  lineHeight: "1.7",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {summary}
               </div>
-            ) : (
+            </div>
+
+            {summary !== "No summary available" && (
               <div
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "4px",
+                  backgroundColor: "#e8f5e8",
+                  padding: "15px",
+                  borderRadius: "6px",
+                  border: "1px solid #c8e6c8",
                 }}
               >
-                {streamedWords.map((word, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      animation: "fadeIn 0.3s ease-in",
-                    }}
-                  >
-                    {word}
-                  </span>
-                ))}
+                <div
+                  style={{
+                    color: "#2e7d32",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    marginBottom: "8px",
+                  }}
+                >
+                  💡 Summary Generated
+                </div>
+                <div
+                  style={{
+                    color: "#388e3c",
+                    fontSize: "13px",
+                  }}
+                >
+                  This summary has been automatically generated from your
+                  uploaded PDF document. Click the play button above to hear it
+                  read aloud.
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes skeletonPulse {
-          0% {
-            opacity: 0.6;
-            transform: scale(1);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1.02);
-          }
-        }
-      `}</style>
     </div>
   );
 }

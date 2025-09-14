@@ -55,10 +55,7 @@ def upload_pdf():
         if os.path.exists(pdf_path):
             os.remove(pdf_path)
 
-    
-
-
-    return jsonify({"first_word": response.json()["textResponse"]})
+    return jsonify({"summary": response.json()["textResponse"]})
 
 
 #-------------------------------------------
