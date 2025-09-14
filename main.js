@@ -30,15 +30,23 @@ function createWindow() {
 
 app.whenReady().then(() => {
   // Start Python backend
-  const backendPath = path.join(__dirname, 'backend', 'server.py');
-  pyProc = spawn('python', [backendPath]); // use 'python3' if needed
+ const backendPath = path.join(__dirname, 'backend', 'server.py');
+  pyProc = spawn('python', [backendPath], { cwd: path.join(__dirname, 'backend') });
 
   pyProc.stdout.on('data', (data) => {
-    console.log(`PYTHON: ${data}`);
+    console.log(`PYTHON STDOUT: ${data.toString()}`);
   });
 
   pyProc.stderr.on('data', (data) => {
-    console.error(`PYTHON ERR: ${data}`);
+    console.error(`PYTHON STDERR: ${data.toString()}`);
+  });
+
+  pyProc.on('error', (err) => {
+    console.error('PYTHON PROCESS ERROR:', err);
+  });
+
+  pyProc.on('close', (code, signal) => {
+    console.error(`PYTHON PROCESS CLOSED: code=${code}, signal=${signal}`);
   });
 
   createWindow();
