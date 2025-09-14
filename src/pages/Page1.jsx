@@ -13,6 +13,7 @@ function Page1() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRoleChange = (e) => {
+    fileInputRef.current.value = null;
     setRole(e.target.value);
     setDetail("brief");
     setPdf(null);
@@ -96,10 +97,11 @@ function Page1() {
       formData.append("detail", detail);
       formData.append("role", role);
 
-      const response = await fetch("http://127.0.0.1:5000/upload", {
+      var response = await fetch("http://127.0.0.1:5000/upload", {
         method: "POST",
         body: formData,
       });
+  
 
       if (!response.ok) {
         if (response.status === 500) {
@@ -120,7 +122,7 @@ function Page1() {
       }
 
       // Navigate if needed after processing
-      navigate("/page2", { state: { summary: result.summary } });
+      navigate("/page2", { state: { summary: result.summary, pdf } });
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to process PDF. Please try again.");

@@ -33,7 +33,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   // Start Python backend
-  const backendPath = path.join(__dirname, "backend", "server.py");
+  const backendPath = path.join(__dirname, "server.py");
   pyProc = spawn("python", [backendPath], {
     cwd: path.join(__dirname, "backend"),
   });

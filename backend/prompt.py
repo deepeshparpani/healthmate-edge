@@ -1,4 +1,4 @@
-def generate_prompt(text_input, mode="patient_mode", detail_level='brief'):
+def generate_prompt(text_input, mode, detail_level='brief'):
     """
     Generate a prompt based on user mode and detail level.
 

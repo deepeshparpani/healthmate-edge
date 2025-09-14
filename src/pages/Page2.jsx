@@ -9,7 +9,10 @@ function Page2() {
 
   // Get summary from navigation state
   const summary = location.state?.summary || "No summary available";
-  const pdfPath = "~/Users/sricharanramesh/Work/Resume/1 pager.pdf";
+
+  const pdfPath = location.state?.pdf
+    ? location.state.pdf.path
+    : null;
 
   const toggleSpeech = () => {
     if (isSpeaking) {
@@ -74,7 +77,7 @@ function Page2() {
         }}
       >
         <h1 style={{ margin: 0, color: "#333" }}>
-          Page 2 - PDF Viewer & Summary
+          Summary
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <button
@@ -115,7 +118,7 @@ function Page2() {
           >
             {isSpeaking ? "⏸️" : "▶️"} {isSpeaking ? "Pause" : "Play"}
           </button>
-          <Button onClick={() => navigate("/")}>Back to Page 1</Button>
+          <Button onClick={() => navigate("/")}>Home</Button>
         </div>
       </div>
 
@@ -146,7 +149,9 @@ function Page2() {
           >
             PDF Viewer
           </div>
-          <div
+          {
+            pdf && (
+                <div
             style={{
               flex: 1,
               padding: "20px",
@@ -156,7 +161,7 @@ function Page2() {
             }}
           >
             <iframe
-              src={`file://${pdfPath}`}
+              src={pdfPath}
               style={{
                 width: "100%",
                 height: "100%",
@@ -166,6 +171,8 @@ function Page2() {
               title="PDF Viewer"
             />
           </div>
+            )
+          }
         </div>
 
         {/* Right Section - Summary Display */}

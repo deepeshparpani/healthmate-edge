@@ -29,12 +29,12 @@ def upload_pdf():
     print(body)
     detail = body.get('detail')
     role = body.get('role')
-    print(role)
+    print(role, detail)
 
     # Save temporarily
     pdf_path = f"temp_{pdf_file.filename}"
     pdf_file.save(pdf_path)
-    response = "YOYO"
+    response = "YOYO"   
     try:
         # Extract cleaned medical text
         raw_text = extract_text_from_pdf(pdf_path)
@@ -42,14 +42,16 @@ def upload_pdf():
         medical_lines = filter_medical_lines(cleaned_lines)
         # Join all medical lines into a single string
         cleaned_text = " ".join(medical_lines)
+        print(cleaned_text)
         payload = {
-        "message": generate_prompt(cleaned_text, mode=f"{role}_mode", detail_level='brief'),
+        "message": generate_prompt(cleaned_text, mode=f"{role}_mode", detail_level=detail),
         "mode": "chat",
         "reset": False
         }
         token = "D7FY75D-H4T46JN-KCYF7NS-9V7PXQJ"
         ANYTHINGLLM_API_URL = "http://localhost:3001/api/v1/workspace/healthmate/chat"
         response = requests.post(ANYTHINGLLM_API_URL, json=payload,headers={"Authorization": f"Bearer {token}"})
+        print(response.json())
     finally:
         # Delete temporary file
         if os.path.exists(pdf_path):
