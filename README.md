@@ -1,6 +1,8 @@
 # HealthMate Edge
 
-AI-powered patient health report analysis application built with [Llama-2-7b](https://huggingface.co/meta-llama/Llama-2-7b) and ElectronJS for [Qualcomm Snapdragon Elite-X Arm64](https://www.qualcomm.com/products/mobile/snapdragon/pcs-and-tablets/snapdragon-elite-x-platform) chipsets.
+AI-powered patient health report analysis application built with [Llama-3.1-8B-Chat8K (via AnythingLLM)](https://anythingllm.com/) and ElectronJS for [Qualcomm Snapdragon Elite-X Arm64](https://www.qualcomm.com/products/mobile/snapdragon/pcs-and-tablets/snapdragon-elite-x-platform) chipsets.
+
+Google Drive Link for the exe. file: https://drive.google.com/drive/folders/19fz0A14TL5c6c8A5NaWOJjoNKNz7BXIf?usp=sharing
 
 ### Table of Contents
 
@@ -23,7 +25,7 @@ HealthMate Edge is a desktop application designed to intelligently analyze and s
 **Health Report Analysis**
 
 - Intelligent summarization of patient health reports
-- Local processing with Llama-2-7b model for data privacy
+- Local processing with Llama-3.1-8B-Chat8K model for data privacy
 - Support for various medical document formats
 
 **Dual User Modes**
@@ -59,13 +61,13 @@ This project provides a modular architecture for healthcare document processing:
 **Backend Processing**
 
 - `src/main/` - Electron main process
-- `src/main/ai/` - Llama-2-7b integration and model handling
+- `src/main/ai/` - Llama-3.1-8B-Chat8K integration and model handling
 - `src/main/tts/` - Text-to-speech processing
 - `src/main/parsers/` - Document parsing utilities
 
 **Models & Configuration**
 
-- `models/` - Llama-2-7b model files and configurations
+- `models/` - Llama-3.1-8B-Chat8K model files and configurations
 - `config/` - Application settings and AI model parameters
 
 ### Implementation
@@ -83,7 +85,7 @@ This app was built for the Snapdragon X Elite ARM64 architecture but designed to
 **Technology Stack:**
 
 - ElectronJS for cross-platform desktop application
-- Llama-2-7b for natural language processing
+- Llama-3.1-8B-Chat8K for natural language processing
 - Native text-to-speech APIs
 - Local file processing for privacy
 
@@ -108,16 +110,17 @@ This app was built for the Snapdragon X Elite ARM64 architecture but designed to
    npm install
    ```
 
-4. **Download AnythingLLM Desktop app to access the Llama-2-7b model**
+4. **Download AnythingLLM Desktop app to access the Llama-3.1-8B-Chat8K model**
 
    1. Download the AnythingLLM Desktop app.
    2. Download the Llama-3.1-3b-chat8k model from Settings > AI Providers > LLM 
    3. Ensure that the model is active in the background. 
 
-5. **Configure the AnythingLLM API [to do]**
-create workspace and use that as slug for the api calls
-Using the /chat endpoint from the co in the chat mode to generate text summary
-setting the temperature as 0.5
+5. **Configure the AnythingLLM API**
+
+    1. Create workspace and use that as slug for the API calls
+    2. Using the /chat endpoint from the co in the chat mode to generate text summary
+    setting the "Chat History" as 5 and "LLM Temperature" as 0.7.
 
 
 ### Usage
@@ -144,7 +147,7 @@ npm run dev:debug
    - Click "Upload Document" or drag and drop files
    - Supported formats: PDF, DOCX, TXT
 4. **Generate Summary**:
-   - Click "Analyze Report" to process with Llama-2-7b
+   - Click "Analyze Report" to process with Llama-3.1-8B-Chat8K
    - Select summary type (Concise/Detailed for Patient mode)
 5. **Text-to-Speech**:
    - Click "Read Aloud" to hear the summary
@@ -269,5 +272,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Disclaimer
 
 HealthMate Edge is designed as an assistive tool for healthcare document analysis. It should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult with qualified healthcare providers for medical decisions.
+
 
 
