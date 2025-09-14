@@ -8,6 +8,8 @@ function Page2() {
   const navigate = useNavigate();
   const [streamedWords, setStreamedWords] = useState([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isStreamComplete, setIsStreamComplete] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const wordsContainerRef = useRef(null);
   const pdfPath = "~/Users/sricharanramesh/Work/Resume/1 pager.pdf";
 
@@ -32,6 +34,7 @@ function Page2() {
     const handleStreamComplete = () => {
       console.log("Stream completed");
       setIsStreaming(false);
+      setIsStreamComplete(true);
     };
 
     // Store refs for cleanup
@@ -65,6 +68,7 @@ function Page2() {
   const startWordStream = async () => {
     console.log("Starting word stream");
     setIsStreaming(true);
+    setIsStreamComplete(false);
     setStreamedWords([]);
 
     try {
@@ -78,15 +82,67 @@ function Page2() {
   const restartStream = async () => {
     console.log("Restarting stream");
 
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+
     // First, stop the current stream and clear state
     await stopCurrentStream();
     setStreamedWords([]);
     setIsStreaming(false);
+    setIsStreamComplete(false);
 
     // Wait a bit to ensure everything is cleaned up
     setTimeout(async () => {
       await startWordStream();
     }, 100);
+  };
+
+  const toggleSpeech = () => {
+    if (streamedWords.length === 0) return;
+
+    if (isSpeaking) {
+      // Pause speech
+      window.speechSynthesis.pause();
+      setIsSpeaking(false);
+      console.log("Speech paused");
+    } else {
+      // Resume or start speech
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setIsSpeaking(true);
+        console.log("Speech resumed");
+      } else {
+        // Start new speech
+        const fullText = streamedWords.join(" ");
+        console.log("Speaking text:", fullText);
+
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(fullText);
+        utterance.rate = 0.9; // Slightly slower than normal
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        utterance.onstart = () => {
+          setIsSpeaking(true);
+          console.log("Speech started");
+        };
+
+        utterance.onend = () => {
+          console.log("Speech completed");
+          setIsSpeaking(false);
+        };
+
+        utterance.onerror = (event) => {
+          console.error("Speech error:", event.error);
+          setIsSpeaking(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+    }
   };
 
   return (
@@ -110,7 +166,7 @@ function Page2() {
         <h1 style={{ margin: 0, color: "#333" }}>
           Page 2 - PDF Viewer & Word Stream
         </h1>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <Button
             onClick={restartStream}
             disabled={isStreaming}
@@ -118,6 +174,42 @@ function Page2() {
           >
             {isStreaming ? "Streaming..." : "Restart Stream"}
           </Button>
+          <button
+            onClick={toggleSpeech}
+            disabled={!isStreamComplete || streamedWords.length === 0}
+            style={{
+              padding: "8px 12px",
+              backgroundColor:
+                isStreamComplete && streamedWords.length > 0
+                  ? isSpeaking
+                    ? "#FF5722"
+                    : "#4CAF50"
+                  : "#ccc",
+              color:
+                isStreamComplete && streamedWords.length > 0 ? "white" : "#666",
+              border: "none",
+              borderRadius: "6px",
+              cursor:
+                isStreamComplete && streamedWords.length > 0
+                  ? "pointer"
+                  : "not-allowed",
+              fontSize: "14px",
+              fontWeight: "bold",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+            title={
+              isStreamComplete && streamedWords.length > 0
+                ? isSpeaking
+                  ? "Pause speech"
+                  : "Play speech"
+                : "Wait for stream to complete"
+            }
+          >
+            {isSpeaking ? "⏸️" : "▶️"} {isSpeaking ? "Pause" : "Play"}
+          </button>
           <Button onClick={() => navigate("/")}>Back to Page 1</Button>
         </div>
       </div>
