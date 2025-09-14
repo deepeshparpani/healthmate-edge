@@ -150,7 +150,7 @@ function Page2() {
             PDF Viewer
           </div>
           {
-            pdf && (
+            pdfPath && (
                 <div
             style={{
               flex: 1,
