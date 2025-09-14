@@ -92,6 +92,7 @@ function Page1() {
       const formData = new FormData();
       formData.append('pdf', pdf);
       formData.append('detail', detail);
+      formData.append('role', role);
 
       const response = await fetch('http://127.0.0.1:5000/upload', {
         method: 'POST',
