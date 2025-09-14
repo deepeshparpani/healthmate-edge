@@ -13,11 +13,11 @@ def generate_prompt(text_input, mode, detail_level='brief'):
     if mode == 'patient_mode':
         if detail_level == 'brief':
             prompt = (
-                f"Summarize the following medical information for a patient in simple, brief terms. Keep the response summary upto 10 words and potential disease/recommendation in 5 words:\n{text_input}"
+                f"Summarize the following medical information for a patient concisely. Keep the response upto 10 words and potential disease/recommendation in 5 words. Output without formatting in a single paragraph string:\n{text_input}"
             )
         elif detail_level == 'long':
             prompt = (
-                f"Explain the following medical information to a patient in detail, using clear and accessible layman language. Keep the response upto 50 words and potential disease/recommendation in 10 words:\n{text_input}"
+                f"Explain the following medical information to a patient in detail using layman language. Keep the response upto 50 words and potential disease/recommendation in 10 words. Output without formatting in a single paragraph string:\n{text_input}"
             )
         else:
             raise ValueError("For patient mode, detail_level must be 'brief' or 'long'.")
