@@ -14,9 +14,13 @@ function Page2() {
   // Create blob URL from uploaded PDF file
   const [pdfUrl, setPdfUrl] = useState(null);
 
+  console.log(pdfFile);
+
   useEffect(() => {
     if (pdfFile) {
+      console.log(pdfFile);
       const url = URL.createObjectURL(pdfFile);
+      console.log("PDF URL:", url);
       setPdfUrl(url);
 
       // Cleanup blob URL when component unmounts
@@ -159,7 +163,7 @@ function Page2() {
           >
             PDF Viewer
           </div>
-          {pdf && (
+          {pdfFile && (
             <div
               style={{
                 flex: 1,
